@@ -1,3 +1,24 @@
+class SceneUI extends Phaser.Scene {
+    constructor() {
+        super({ key: 'UIScene', active: false });
+    }
+
+    create() {
+        // Fondo negro de la barra
+        this.add.rectangle(20, 20, 205, 25, 0x000000).setOrigin(0);
+        // Barra roja que cambia
+        this.barraRoja = this.add.rectangle(22, 22, 200, 21, 0xff0000).setOrigin(0);
+
+        // Escucha cambios globales 
+        this.registry.events.on('changedata-salud', (parent, value) => {
+            // Ajustamos el ancho 
+            this.barraRoja.width = Phaser.Math.Clamp(value * 2, 0, 200);
+        });
+    }
+}
+
+
+
 class Escena extends Phaser.Scene {
     constructor() {
         super({key: 'sceneA'});
@@ -10,21 +31,20 @@ class Escena extends Phaser.Scene {
     }
 
     create() {
-        this.add.sprite(480, 320, 'fondo');
+        
+        const { width, height } = this.sys.game.config; // Diseño esponsive
+
+        this.add.sprite(width / 2, height / 2, 'fondo');
         // Coordenadas para la esquina superior izquierda
-            const cornerX = 20;
-            const cornerY = 20;
-
-            
-           
-            this.add.rectangle(cornerX, cornerY, 205, 25, 0x000000).setOrigin(0);
-            
-           
-            this.barraRoja = this.add.rectangle(cornerX + 2, cornerY + 2, 200, 21, 0xff0000).setOrigin(0);
-
-            // Variables de estado
-            this.saludMaxima = 100;
-            this.saludActual = 100;
+            if (!this.scene.isActive('UIScene')) {
+            this.scene.run('UIScene');
+            }
+        
+        // 2. Definimos la salud inicial en el registro global
+        // Solo lo hacemos si no existe ya (para no resetearla al volver a esta escena)
+            if (this.registry.get('salud') === undefined) {
+                this.registry.set('salud', 100);
+            }
 
         const opcionNave = this.add.zone(140, 10, 440, 400);
         opcionNave.setOrigin(0);
@@ -188,11 +208,12 @@ function resize() {
 }
 
 const config = {
-    type: Phaser.canvas,
+    type: Phaser.AUTO,
     parent: 'phaser-example',
-    width: 960,
-    height: 640,
-    scene: [Escena, EscenaNave, EscenaHome, EscenaMonstruo, EscenaArgentina, EscenaContinente],
+    width: 1920,
+    height: 1080,
+    
+    scene: [Escena, EscenaNave, EscenaHome, EscenaMonstruo, EscenaArgentina, EscenaContinente,SceneUI],
 };
 
 new Phaser.Game(config);
