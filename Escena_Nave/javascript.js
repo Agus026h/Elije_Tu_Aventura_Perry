@@ -259,7 +259,7 @@ class Escena extends SceneUI {
         opcionPuerta.setName('puerta');
         opcionPuerta.setInteractive({useHandCursor: true});
         opcionPuerta.once('pointerdown', () => this.opcionPulsada(opcionPuerta));
-        this.add.graphics().lineStyle(2, 0xff0000).strokeRectShape(opcionPuerta);
+        //this.add.graphics().lineStyle(2, 0xff0000).strokeRectShape(opcionPuerta);
 
         
     }
@@ -304,7 +304,7 @@ class EscenaPuerta extends SceneUI {
         opcionPasar.input.cursor = 'pointer';// al ser poligono le cambio el pointer asi
         opcionPasar.once('pointerdown', () => this.opcionPulsada(opcionPasar));
       
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoPuerta.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoPuerta.points, true);
     }
 
     opcionPulsada(opcion) {
@@ -344,7 +344,7 @@ class EscenaPasillo extends SceneUI {
         .setInteractive(contornoPrincipal, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionPrincipal.input.cursor = 'pointer';
         opcionPrincipal.once('pointerdown', () => this.opcionPulsada(opcionPrincipal));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoPrincipal.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoPrincipal.points, true);
 
 
 
@@ -354,7 +354,7 @@ class EscenaPasillo extends SceneUI {
         .setInteractive(contornoSecundario, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionSecundaria.input.cursor = 'pointer';
         opcionSecundaria.once('pointerdown', ()=> this.opcionPulsada(opcionSecundaria));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoSecundario.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoSecundario.points, true);
 
         
         
@@ -424,7 +424,7 @@ class EscenaOjo extends SceneUI{
         .setInteractive(contornoOjo, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionOjo.input.cursor = 'pointer';
         opcionOjo.on('pointerdown', () => this.opcionPulsada(opcionOjo));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoOjo.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoOjo.points, true);
 
 
         //puerta R
@@ -435,7 +435,7 @@ class EscenaOjo extends SceneUI{
         .setInteractive(contornoR, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionR.input.cursor = 'pointer';
         opcionR.once('pointerdown', ()=> this.opcionPulsada(opcionR));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoR.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoR.points, true);
 
         //puerta N
         const contornoN = new Phaser.Geom.Polygon([114,1068,353,333,349,110,132,86,0,196,0,1070]);
@@ -445,7 +445,7 @@ class EscenaOjo extends SceneUI{
         .setInteractive(contornoN, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionN.input.cursor = 'pointer';
         opcionN.once('pointerdown', ()=> this.opcionPulsada(opcionN));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoN.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoN.points, true);
 
     }
     
@@ -502,7 +502,7 @@ class EscenaOjoAbierto extends SceneUI{
         .setInteractive(contornoOjo, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionOjo.input.cursor = 'pointer';
         opcionOjo.on('pointerdown', () => this.opcionPulsada(opcionOjo));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoOjo.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoOjo.points, true);
 
 
         //puerta R
@@ -513,7 +513,7 @@ class EscenaOjoAbierto extends SceneUI{
         .setInteractive(contornoR, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionR.input.cursor = 'pointer';
         opcionR.once('pointerdown', ()=> this.opcionPulsada(opcionR));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoR.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoR.points, true);
 
         //puerta N
         const contornoN = new Phaser.Geom.Polygon([114,1068,353,333,349,110,132,86,0,196,0,1070]);
@@ -523,7 +523,7 @@ class EscenaOjoAbierto extends SceneUI{
         .setInteractive(contornoN, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionN.input.cursor = 'pointer';
         opcionN.once('pointerdown', ()=> this.opcionPulsada(opcionN));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoN.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoN.points, true);
 
     }
     
@@ -577,7 +577,7 @@ class EscenaCofre extends SceneUI {
         .setInteractive(contornoCofre, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionCofre.input.cursor = 'pointer';
         opcionCofre.once('pointerdown', () => this.opcionPulsada(opcionCofre));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoCofre.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoCofre.points, true);
     }
 
     opcionPulsada(opcion){
@@ -686,7 +686,7 @@ class EscenaPuente extends SceneUI {
         .setInteractive(contornoTorre, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionTorre.input.cursor = 'pointer';
         opcionTorre.on('pointerdown', () => this.opcionPulsada(opcionTorre));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoTorre.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoTorre.points, true);
     
 
     }
@@ -731,7 +731,7 @@ class EscenaHades extends SceneUI {
         .setInteractive(contornoHades, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionHades.input.cursor = 'pointer';
         opcionHades.on('pointerdown', () => this.opcionPulsada(opcionHades));
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoHades.points, true);
+        //this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoHades.points, true);
     
 
     }
