@@ -2,29 +2,40 @@ class SceneUI extends Phaser.Scene {
 
     //barra de vida
     setupInterfaz() {
-        this.add.rectangle(20, 20, 205, 25, 0x000000).setOrigin(0);
-        this.barraRoja = this.add.rectangle(22, 22, 200, 21, 0xff0000).setOrigin(0);
+        const { width, height } = this.sys.game.config; 
+        //estados
+        if (this.registry.get('botonBailarActivado') === undefined) {
+        this.registry.set('botonBailarActivado', false);
+        }
         
-        // Usamos una variable de la escena para la salud
         if (this.registry.get('salud') === undefined) {
             this.registry.set('salud', 100);
         }
+        //barra de vida
+        this.add.rectangle(20, 20, 205, 25, 0x000000).setOrigin(0);
+        this.barraRoja = this.add.rectangle(22, 22, 200, 21, 0xff0000).setOrigin(0);
         this.actualizarBarra();
 
-        const { width, height } = this.sys.game.config;
-        this.botonAtras = this.add.container(width - 120, height - 70);
+        //boton atras
+        
+        this.botonAtras = this.add.container(120, height - 70);
+        let fondoAtras = this.add.rectangle(0, 0, 150, 50, 0x333333).setOrigin(0.5);
+        let textoAtras = this.add.text(0, 0, 'ATRAS', { fontSize: '20px', fill: '#fff' }).setOrigin(0.5);
+        this.botonAtras.add([fondoAtras, textoAtras]);
 
-        // El cuadrado 
-        let fondoBoton = this.add.rectangle(0, 0, 150, 50, 0x333333).setOrigin(0.5);
-        // El texto
-        let textoBoton = this.add.text(0, 0, 'ATRÁS', { fontSize: '20px', fill: '#fff' }).setOrigin(0.5);
+        fondoAtras.setInteractive({ useHandCursor: true });
+        fondoAtras.on('pointerdown', () => {
+            const destino = this.registry.get('escenaPrevia') || 'sceneA';
+            this.scene.start(destino);
+        });
 
-        this.botonAtras.add([fondoBoton, textoBoton]);
 
-        // Hacerlo interactivo
-        fondoBoton.setInteractive({ useHandCursor: true });
-        fondoBoton.on('pointerdown', () => this.volverAtras());
-
+        this.setupBotonBailar();
+        this.setupNotificaciones();
+        
+        this.videoPerry = this.add.video(width / 2, height / 2, 'videoPerry');
+        this.videoPerry.setVisible(false);
+        this.videoPerry.setDepth(2000);
     }
 
 
@@ -96,8 +107,6 @@ class SceneUI extends Phaser.Scene {
     }
 
 
-
-
     //Resto y Actualizo al mismo tiempo
     recibirDanio(cantidad) {
         let salud = this.registry.get('salud') - cantidad;
@@ -114,18 +123,90 @@ class SceneUI extends Phaser.Scene {
 
     volverAtras(escena) {
         if (escena) {
-            console.log("Navegando hacia:", escena);
             this.scene.start(escena);
+        }else{
+            this.scene.start('sceneA');
         }
     
     }
 
-    setBotonAtrasVisible(estado) {
-        if (this.botonAtras) {
-            this.botonAtras.setVisible(estado);
+
+
+
+    setupBotonBailar() {
+        const { width, height } = this.sys.game.config;
+        
+        this.cntBailar = this.add.container(width - 100, height - 100);
+        
+        // circulo
+        this.fondoBailar = this.add.graphics();
+        this.dibujarBotonBailar(this.registry.get('botonBailarActivado'));
+
+        let textoBailar = this.add.text(0, 0, 'BAILAR', { 
+            fontSize: '20px', 
+            fill: '#fff',
+            fontWeight: 'bold' 
+        }).setOrigin(0.5);
+
+        this.cntBailar.add([this.fondoBailar, textoBailar]);
+
+        const hitArea = new Phaser.Geom.Circle(0, 0, 50);
+        this.cntBailar.setInteractive(hitArea, Phaser.Geom.Circle.Contains);
+        
+        this.cntBailar.on('pointerdown', () => {
+            if (this.registry.get('botonBailarActivado')) {
+                this.ejecutarBaile();
+            } else {
+                this.mostrarNotificacion("Aun no desbloqueas esta habilidad");
+            }
+        });
+
+        // Actualizar visualmente si cambia el registro
+        this.registry.events.on('changedata-botonBailarActivado', (parent, value) => {
+            this.dibujarBotonBailar(value);
+        });
+    }
+
+    
+    dibujarBotonBailar(activado) {
+        this.fondoBailar.clear();
+        const color = activado ? 0x9b59b6 : 0x444444; // Morado si activado, gris si no
+        
+        this.fondoBailar.fillStyle(color, 1);
+        this.fondoBailar.fillCircle(0, 0, 50);
+        this.fondoBailar.lineStyle(3, 0xffffff);
+        this.fondoBailar.strokeCircle(0, 0, 50);
+    }
+
+
+    ejecutarBaile() {
+        
+        this.mostrarNotificacion("A bailar! +50 de vida");
+        let salud = Math.min(100, this.registry.get('salud') + 50);
+        this.registry.set('salud', salud);
+        this.actualizarBarra();
+
+        // video
+        if (this.videoPerry) {
             
-            this.botonAtras.iterate(child => {
-                if (child.input) child.input.enabled = estado;
+            this.videoPerry.setVisible(true);
+            this.videoPerry.once('play', () => {
+                // creo un evento para cambiar el tama;o por que phaser lo redimenciona al darle play
+                this.videoPerry.setDisplaySize(400, 700); 
+                
+                console.log("Video iniciado y redimensionado");
+            });
+
+            this.videoPerry.play();
+            
+            
+            this.cntBailar.disableInteractive(); //bloqueo de boton
+
+            // 
+            this.videoPerry.once('complete', () => {
+                this.videoPerry.setVisible(false);
+                this.videoPerry.stop();
+                this.cntBailar.setInteractive(); //desbloqueo de
             });
         }
     }
@@ -143,6 +224,11 @@ class Escena extends SceneUI {
         resize();
         window.addEventListener('resize', resize);
         this.load.image('fondo', '../img/Escena1.png');
+        
+        this.load.video('videoPerry', '../img/Baile.mp4');
+        
+        
+        
     }
 
     create() {
@@ -151,6 +237,7 @@ class Escena extends SceneUI {
 
         this.add.sprite(width / 2, height / 2, 'fondo');
         this.setupInterfaz();
+        
         
         //this.recibirDanio(10);
 
@@ -183,16 +270,19 @@ class EscenaPuerta extends SceneUI {
 
     preload() {
         this.load.image('puerta', '../img/Escena2.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
 
     create() {
         const { width, height } = this.sys.game.config; // Diseño esponsive
 
         this.add.sprite(width / 2, height / 2, 'puerta');
+        //para el boton atras
+        this.registry.set('escenaPrevia', 'sceneA');
         this.setupInterfaz();
         this.recibirDanio(10);
-        this.setupNotificaciones();
-        this.mostrarNotificacion("asdaksdjkasj dkajsdkajskdjak sdjkasjdkajsdka jskdjaksdj kasjdkajsdkajskd");
+        
+       
 
         const contornoPuerta = new Phaser.Geom.Polygon([945,823,974,489,1136,349,1303,427,1320,834]);
         const opcionPasar = this.add.zone(0,0,960,640)
@@ -222,12 +312,14 @@ class EscenaPasillo extends SceneUI {
 
     preload() {
         this.load.image('pasillo', '../img/Escena3.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
 
     create() {
         const { width, height } = this.sys.game.config; // Diseño esponsive
 
         this.add.sprite(width / 2, height / 2, 'pasillo');
+        this.registry.set('escenaPrevia', 'puertaScene');
         this.setupInterfaz();
         this.recibirDanio(10);
         
@@ -259,7 +351,7 @@ class EscenaPasillo extends SceneUI {
     opcionPulsada(opcion){
         switch (opcion.name){
             case 'principal':
-            this.scene.start('Scene');
+            this.scene.start('ojoScene');
             break;
 
             case 'secundaria':
@@ -276,29 +368,75 @@ class EscenaRunas extends SceneUI{
 
     preload(){
         this.load.image('runas', '../img/Escena4.jpg');
-
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
     create(){
         const { width, height } = this.sys.game.config; // Diseño esponsive
 
         this.add.sprite(width / 2, height / 2, 'runas');
+        this.registry.set('escenaPrevia', 'pasilloScene');
+
         this.setupInterfaz();
         this.recibirDanio(10);
+        this.mostrarNotificacion("Unas runas magicas desbloquean la habilidad de curarte 50 de vida al bailar");
+        this.registry.set('botonBailarActivado', true);
 
         
     }
 
 }
-class EscenaHome extends SceneUI{
+class EscenaOjo extends SceneUI{
     constructor(){
-        super({key: 'homeScene'});
+        super({key: 'ojoScene'});
     }
 
     preload(){
-        this.load.image('home', '../img/home.jpg');
+        this.load.image('ojo', '../img/escena5.jpg');
     }
     create(){
-        this.add.sprite(480, 320, 'home');
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'ojo');
+        this.registry.set('escenaPrevia', 'pasilloScene');
+
+        this.setupInterfaz();
+        this.recibirDanio(10);
+
+        
+        
+        
+
+        //puerta central
+        const contornoOjo = new Phaser.Geom.Polygon([651,1068,750,470,843,344,957,293,1062,344,1158,449,1250,1073]);
+        const opcionOjo = this.add.zone(0,0,960,640)
+        .setOrigin(0)
+        .setName('ojo')
+        .setInteractive(contornoOjo, Phaser.Geom.Polygon.Contains);
+        opcionOjo.input.cursor = 'pointer';
+        opcionOjo.once('pointerdown', () => this.opcionPulsada(opcionOjo));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoOjo.points, true);
+
+
+        //puerta R
+        const contornoR = new Phaser.Geom.Polygon([1798,1054,1555,406,1560,120,1754,77,1918,200,1918,1071]);
+        const opcionR = this.add.zone(0,0, 960,640)
+        .setOrigin(0)
+        .setName('secundaria')
+        .setInteractive(contornoR, Phaser.Geom.Polygon.Contains);
+        opcionR.input.cursor = 'pointer';
+        opcionR.once('pointerdown', ()=> this.opcionPulsada(opcionR));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoR.points, true);
+
+        //puerta N
+        const contornoN = new Phaser.Geom.Polygon([114,1068,353,333,349,110,132,86,0,196,0,1070]);
+        const opcionN = this.add.zone(0,0, 960,640)
+        .setOrigin(0)
+        .setName('secundaria')
+        .setInteractive(contornoN, Phaser.Geom.Polygon.Contains);
+        opcionN.input.cursor = 'pointer';
+        opcionN.once('pointerdown', ()=> this.opcionPulsada(opcionN));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoN.points, true);
+
     }
 
 }
@@ -333,7 +471,7 @@ const config = {
     width: 1920,
     height: 1080,
     
-    scene: [Escena, EscenaPuerta, EscenaHome, EscenaMonstruo, EscenaRunas, EscenaPasillo,SceneUI],
+    scene: [Escena, EscenaPuerta, EscenaOjo, EscenaMonstruo, EscenaRunas, EscenaPasillo,SceneUI],
 };
 
 new Phaser.Game(config);
