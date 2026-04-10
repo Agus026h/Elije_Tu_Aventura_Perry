@@ -1,25 +1,69 @@
 class SceneUI extends Phaser.Scene {
-    constructor() {
-        super({ key: 'UIScene', active: false });
+    setupInterfaz() {
+        this.add.rectangle(20, 20, 205, 25, 0x000000).setOrigin(0);
+        this.barraRoja = this.add.rectangle(22, 22, 200, 21, 0xff0000).setOrigin(0);
+        
+        // Usamos una variable de la escena para la salud
+        if (this.registry.get('salud') === undefined) {
+            this.registry.set('salud', 100);
+        }
+        this.actualizarBarra();
+
+        const { width, height } = this.sys.game.config;
+        this.botonAtras = this.add.container(width - 120, height - 70);
+
+        // El cuadrado 
+        let fondoBoton = this.add.rectangle(0, 0, 150, 50, 0x333333).setOrigin(0.5);
+        // El texto
+        let textoBoton = this.add.text(0, 0, 'ATRÁS', { fontSize: '20px', fill: '#fff' }).setOrigin(0.5);
+
+        this.botonAtras.add([fondoBoton, textoBoton]);
+
+        // Hacerlo interactivo
+        fondoBoton.setInteractive({ useHandCursor: true });
+        fondoBoton.on('pointerdown', () => this.volverAtras());
+
+        
+
     }
 
-    create() {
-        // Fondo negro de la barra
-        this.add.rectangle(20, 20, 205, 25, 0x000000).setOrigin(0);
-        // Barra roja que cambia
-        this.barraRoja = this.add.rectangle(22, 22, 200, 21, 0xff0000).setOrigin(0);
+    //Resto y Actualizo al mismo tiempo
+    recibirDanio(cantidad) {
+        let salud = this.registry.get('salud') - cantidad;
+        this.registry.set('salud', salud);
+        this.actualizarBarra();
+    }
 
-        // Escucha cambios globales 
-        this.registry.events.on('changedata-salud', (parent, value) => {
-            // Ajustamos el ancho 
-            this.barraRoja.width = Phaser.Math.Clamp(value * 2, 0, 200);
-        });
+    actualizarBarra() {
+        if (this.barraRoja) {
+            let salud = this.registry.get('salud');
+            this.barraRoja.width = Phaser.Math.Clamp(salud * 2, 0, 200);
+        }
+    }
+
+    volverAtras(escena) {
+        if (escena) {
+            console.log("Navegando hacia:", escena);
+            this.scene.start(escena);
+        }
+    
+    }
+
+    setBotonAtrasVisible(estado) {
+        if (this.botonAtras) {
+            this.botonAtras.setVisible(estado);
+            
+            this.botonAtras.iterate(child => {
+                if (child.input) child.input.enabled = estado;
+            });
+        }
     }
 }
 
 
 
-class Escena extends Phaser.Scene {
+
+class Escena extends SceneUI {
     constructor() {
         super({key: 'sceneA'});
     }
@@ -35,23 +79,16 @@ class Escena extends Phaser.Scene {
         const { width, height } = this.sys.game.config; // Diseño esponsive
 
         this.add.sprite(width / 2, height / 2, 'fondo');
-        // Coordenadas para la esquina superior izquierda
-            if (!this.scene.isActive('UIScene')) {
-            this.scene.run('UIScene');
-            }
-        
-        // 2. Definimos la salud inicial en el registro global
-        // Solo lo hacemos si no existe ya (para no resetearla al volver a esta escena)
-            if (this.registry.get('salud') === undefined) {
-                this.registry.set('salud', 100);
-            }
+        this.setupInterfaz();
+        this.recibirDanio(10);
+
 
         const opcionNave = this.add.zone(140, 10, 440, 400);
         opcionNave.setOrigin(0);
         opcionNave.setName('nave');
         opcionNave.setInteractive();
         opcionNave.once('pointerdown', () => this.opcionPulsada(opcionNave));
-        //this.add.graphics().lineStyle(2, 0xff0000).strokeRectShape(opcionNave);
+        this.add.graphics().lineStyle(2, 0xff0000).strokeRectShape(opcionNave);
 
         const opcionMundo = this.add.zone(590, 240, 370, 410);
         opcionMundo.setOrigin(0);
@@ -59,7 +96,7 @@ class Escena extends Phaser.Scene {
         opcionMundo.setInteractive();
         opcionMundo.once('pointerdown', () => this.opcionPulsada(opcionMundo));
 
-        //this.add.graphics().lineStyle(2, 0x00ff00).strokeRectShape(opcionMundo);
+        this.add.graphics().lineStyle(2, 0x00ff00).strokeRectShape(opcionMundo);
     }
 
     opcionPulsada(opcion) {
@@ -72,7 +109,7 @@ class Escena extends Phaser.Scene {
     }
 }
 
-class EscenaNave extends Phaser.Scene {
+class EscenaNave extends SceneUI {
 
     constructor() {
         super({key: 'naveScene'});
@@ -84,6 +121,8 @@ class EscenaNave extends Phaser.Scene {
 
     create() {
         this.add.sprite(480, 320, 'nave');
+        this.setupInterfaz();
+        this.recibirDanio(10);
 
         const opcionNave = this.add.zone(150, 170, 250, 370);
         opcionNave.setOrigin(0);
@@ -91,7 +130,7 @@ class EscenaNave extends Phaser.Scene {
         opcionNave.setInteractive();
         opcionNave.once('pointerdown', () => this.opcionPulsada(opcionNave));
         //
-
+        
 
         const opcionMundo = this.add.zone(530, 170, 250, 370);
         opcionMundo.setOrigin(0);
@@ -110,7 +149,7 @@ class EscenaNave extends Phaser.Scene {
     }
 }
 
-class EscenaContinente extends Phaser.Scene {
+class EscenaContinente extends SceneUI {
 
     constructor() {
         super({key: 'continenteScene'});
@@ -122,7 +161,10 @@ class EscenaContinente extends Phaser.Scene {
 
     create() {
         this.add.sprite(480, 320, 'continente');
+        this.setupInterfaz();
+        this.recibirDanio(10);
         //argentina
+
         const contornoArgentina = new Phaser.Geom.Polygon([585,488,555,471,548,474,539,469,534,479,526,485,527,498,
             520,508,520,519,520,531,514,545,514,556,513,568,516,580,512,
             590,508,598,514,605,519,610,527,612,536,616,542,616,534,598,
@@ -156,7 +198,7 @@ class EscenaContinente extends Phaser.Scene {
     }
 
 }
-class EscenaArgentina extends Phaser.Scene{
+class EscenaArgentina extends SceneUI{
     constructor(){
         super({key: 'argentinaScene'});
     }
@@ -169,7 +211,7 @@ class EscenaArgentina extends Phaser.Scene{
     }
 
 }
-class EscenaHome extends Phaser.Scene{
+class EscenaHome extends SceneUI{
     constructor(){
         super({key: 'homeScene'});
     }
@@ -183,7 +225,7 @@ class EscenaHome extends Phaser.Scene{
 
 }
 
-class EscenaMonstruo extends Phaser.Scene {
+class EscenaMonstruo extends SceneUI {
 
     constructor() {
         super({key: 'monstruoScene'});
