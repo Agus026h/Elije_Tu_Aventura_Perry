@@ -802,7 +802,7 @@ class EscenaFinalBueno extends SceneUI {
         
         
         this.setupInterfaz();
-        this.mostrarNotificacion("Derrotaste a Hades y salvaste al Pueblo de Danville");
+        this.mostrarNotificacion("¡¡¡Derrotaste a Hades y salvaste al Pueblo de Danville!!!  Perry despues de una larga batalla logra despertar el poder de su espada y asestarle el golpe final a Hades");
         this.botonAtras.setVisible(false);
         //this.recibirDanio(10);
 
