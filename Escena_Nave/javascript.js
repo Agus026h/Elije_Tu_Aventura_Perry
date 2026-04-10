@@ -1,4 +1,6 @@
 class SceneUI extends Phaser.Scene {
+
+    //barra de vida
     setupInterfaz() {
         this.add.rectangle(20, 20, 205, 25, 0x000000).setOrigin(0);
         this.barraRoja = this.add.rectangle(22, 22, 200, 21, 0xff0000).setOrigin(0);
@@ -23,9 +25,78 @@ class SceneUI extends Phaser.Scene {
         fondoBoton.setInteractive({ useHandCursor: true });
         fondoBoton.on('pointerdown', () => this.volverAtras());
 
-        
-
     }
+
+
+    setupNotificaciones() {
+        const { width } = this.sys.game.config;
+
+        this.cntNotificacion = this.add.container(width / 2, -200);
+        this.cntNotificacion.setDepth(1000);
+
+        // graphis es mas dinamico que usar rectangle
+        this.fondoNotif = this.add.graphics();
+
+        this.textoNotif = this.add.text(0, 0, '', {
+            fontSize: '24px',
+            fill: '#ffffff',
+            align: 'center',
+            wordWrap: { width: 800, useAdvancedWrap: true }//es mejor para las palabras largas
+        }).setOrigin(0.5);
+
+        this.cntNotificacion.add([this.fondoNotif, this.textoNotif]);
+    }
+
+    mostrarNotificacion(mensaje) {
+        if (this.animandoNotif || !this.textoNotif) return;
+        this.animandoNotif = true;
+
+        // seteo el texto y fuerso que se actualize por que no lo hace automaticamente
+        this.textoNotif.setText(mensaje);
+        this.textoNotif.updateText();
+
+        // Calculo dimensiones
+        const paddingX = 40;
+        const paddingY = 30;
+        const ancho = this.textoNotif.width + paddingX;
+        const alto = this.textoNotif.height + paddingY;
+
+        this.fondoNotif.clear();
+        
+       //centrado
+        this.fondoNotif.fillStyle(0x000000, 0.8);
+        this.fondoNotif.fillRect(-ancho / 2, -alto / 2, ancho, alto);
+        
+        // Estilo del borde 
+        this.fondoNotif.lineStyle(2, 0xffffff, 1);
+        this.fondoNotif.strokeRect(-ancho / 2, -alto / 2, ancho, alto);
+
+        // animacion
+        this.tweens.add({
+            targets: this.cntNotificacion,
+            y: 100, 
+            duration: 500,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                let tiempoLectura = Math.max(2500, mensaje.length * 50);//para calcular el tiempo dependiendo del largo del mensaje
+                
+                this.time.delayedCall(tiempoLectura, () => {
+                    this.tweens.add({
+                        targets: this.cntNotificacion,
+                        y: -300, 
+                        duration: 500,
+                        ease: 'Back.easeIn',
+                        onComplete: () => { 
+                            this.animandoNotif = false; 
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+
+
 
     //Resto y Actualizo al mismo tiempo
     recibirDanio(cantidad) {
@@ -71,7 +142,7 @@ class Escena extends SceneUI {
     preload() {
         resize();
         window.addEventListener('resize', resize);
-        this.load.image('fondo', '../img/espacio.jpg');
+        this.load.image('fondo', '../img/Escena1.png');
     }
 
     create() {
@@ -80,134 +151,141 @@ class Escena extends SceneUI {
 
         this.add.sprite(width / 2, height / 2, 'fondo');
         this.setupInterfaz();
-        this.recibirDanio(10);
+        
+        //this.recibirDanio(10);
 
 
-        const opcionNave = this.add.zone(140, 10, 440, 400);
-        opcionNave.setOrigin(0);
-        opcionNave.setName('nave');
-        opcionNave.setInteractive();
-        opcionNave.once('pointerdown', () => this.opcionPulsada(opcionNave));
-        this.add.graphics().lineStyle(2, 0xff0000).strokeRectShape(opcionNave);
+        const opcionPuerta = this.add.zone(1400, 10, 440, 400);
+        opcionPuerta.setOrigin(0);
+        opcionPuerta.setName('puerta');
+        opcionPuerta.setInteractive({useHandCursor: true});
+        opcionPuerta.once('pointerdown', () => this.opcionPulsada(opcionPuerta));
+        this.add.graphics().lineStyle(2, 0xff0000).strokeRectShape(opcionPuerta);
 
-        const opcionMundo = this.add.zone(590, 240, 370, 410);
-        opcionMundo.setOrigin(0);
-        opcionMundo.setName('tierra');
-        opcionMundo.setInteractive();
-        opcionMundo.once('pointerdown', () => this.opcionPulsada(opcionMundo));
-
-        this.add.graphics().lineStyle(2, 0x00ff00).strokeRectShape(opcionMundo);
+        
     }
 
     opcionPulsada(opcion) {
         console.log("Opción:" + opcion.name)
-        if (opcion.name === 'nave') {
-            this.scene.start('naveScene');
+        if (opcion.name === 'puerta') {
+            this.scene.start('puertaScene');
         } else {
-            this.scene.start('continenteScene');
+            this.scene.start('sceneA');
         }
     }
 }
 
-class EscenaNave extends SceneUI {
+class EscenaPuerta extends SceneUI {
 
     constructor() {
-        super({key: 'naveScene'});
+        super({key: 'puertaScene'});
     }
 
     preload() {
-        this.load.image('nave', '../img/nave.jpg');
+        this.load.image('puerta', '../img/Escena2.jpg');
     }
 
     create() {
-        this.add.sprite(480, 320, 'nave');
+        const { width, height } = this.sys.game.config; // Diseño esponsive
+
+        this.add.sprite(width / 2, height / 2, 'puerta');
         this.setupInterfaz();
         this.recibirDanio(10);
+        this.setupNotificaciones();
+        this.mostrarNotificacion("asdaksdjkasj dkajsdkajskdjak sdjkasjdkajsdka jskdjaksdj kasjdkajsdkajskd");
 
-        const opcionNave = this.add.zone(150, 170, 250, 370);
-        opcionNave.setOrigin(0);
-        opcionNave.setName('boss');
-        opcionNave.setInteractive();
-        opcionNave.once('pointerdown', () => this.opcionPulsada(opcionNave));
-        //
-        
-
-        const opcionMundo = this.add.zone(530, 170, 250, 370);
-        opcionMundo.setOrigin(0);
-        opcionMundo.setName('home');
-        opcionMundo.setInteractive();
-        opcionMundo.once('pointerdown', () => this.opcionPulsada(opcionMundo));
-        //  this.add.graphics().lineStyle(2, 0x00ff00).strokeRectShape(opcionMundo);
+        const contornoPuerta = new Phaser.Geom.Polygon([945,823,974,489,1136,349,1303,427,1320,834]);
+        const opcionPasar = this.add.zone(0,0,960,640)
+        .setOrigin(0)
+        .setName('pasillo')
+        .setInteractive(contornoPuerta, Phaser.Geom.Polygon.Contains);
+        opcionPasar.input.cursor = 'pointer';// al ser poligono le cambio el pointer asi
+        opcionPasar.once('pointerdown', () => this.opcionPulsada(opcionPasar));
+      
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoPuerta.points, true);
     }
 
     opcionPulsada(opcion) {
-        if (opcion.name === 'boss') {
-            this.scene.start('monstruoScene');
+        if (opcion.name === 'pasillo') {
+            this.scene.start('pasilloScene');
         } else {
-            this.scene.start('homeScene');
+            this.scene.start('sceneA');
         }
     }
 }
 
-class EscenaContinente extends SceneUI {
+class EscenaPasillo extends SceneUI {
 
     constructor() {
-        super({key: 'continenteScene'});
+        super({key: 'pasilloScene'});
     }
 
     preload() {
-        this.load.image('continente', '../img/heroeContinente.jpg');
+        this.load.image('pasillo', '../img/Escena3.jpg');
     }
 
     create() {
-        this.add.sprite(480, 320, 'continente');
+        const { width, height } = this.sys.game.config; // Diseño esponsive
+
+        this.add.sprite(width / 2, height / 2, 'pasillo');
         this.setupInterfaz();
         this.recibirDanio(10);
-        //argentina
+        
 
-        const contornoArgentina = new Phaser.Geom.Polygon([585,488,555,471,548,474,539,469,534,479,526,485,527,498,
-            520,508,520,519,520,531,514,545,514,556,513,568,516,580,512,
-            590,508,598,514,605,519,610,527,612,536,616,542,616,534,598,
-            541,592,534,583,544,580,550,572,555,568,546,563,562,561,566,
-            554,575,551,586,552,592,541,584,532,584,519,589,510,595,504,609,494,604,490,594,500,582,498]);
-        const opcionArgentina = this.add.zone(0,0,960,640)
+        const contornoPrincipal = new Phaser.Geom.Polygon([410,524,412,224,461,162,529,146,590,165,626,228,629,241,631,518]);
+        const contornoSecundario = new Phaser.Geom.Polygon([858,188,865,565,1771,560,1762,194,1530,145,1084,155]);
+        const opcionPrincipal = this.add.zone(0,0,960,640)
         .setOrigin(0)
-        .setName('argentina')
-        .setInteractive(contornoArgentina, Phaser.Geom.Polygon.Contains);
-        opcionArgentina.once('pointerdown', () => this.opcionPulsada(opcionArgentina));
-      
-        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoArgentina.points, true);
+        .setName('principal')
+        .setInteractive(contornoPrincipal, Phaser.Geom.Polygon.Contains);
+        opcionPrincipal.input.cursor = 'pointer';
+        opcionPrincipal.once('pointerdown', () => this.opcionPulsada(opcionPrincipal));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoPrincipal.points, true);
 
-        //Brasil
-        const contornoBrasil = new Phaser.Geom.Polygon([710,386,707,371,695,371,682,362,657,360,639,352,625,338,617,324,610,333,600,336,575,340,570,327,551,330,538,342,530,336,520,341,521,353,517,370,502,374,496,385,499,396,507,400,523,408,534,398,542,400,541,412,552,417,564,420,569,423,571,435,582,438,586,444,584,454,584,466,595,469,599,479,605,479,606,488,608,496,599,502,592,509,598,514,605,515,610,523,628,506,637,481,671,469,684,442,693,414]);
 
-        //Africa
-        const contornoAfrica = new Phaser.Geom.Polygon([944,209,912,204,907,208,898,204,880,193,880,184,849,184,837,188,827,196,829,208,824,212,821,226,821,240,826,248,828,261,829,275,838,280,846,290,853,299,863,304,876,305,888,299,897,306,906,308,906,328,916,348,918,368,912,394,919,408,919,427,921,443,923,456,938,451,946,444,954,428,959,417,959,214]);
-        //Europa
-        const contornoEuropa = new Phaser.Geom.Polygon([958,191,934,192,914,188,896,183,887,182,866,180,841,179,822,179,812,159,826,153,815,139,808,129,793,123,788,101,814,91,822,70,836,63,859,65,876,67,893,74,907,75,916,65,938,65,958,65]);
+
+        const opcionSecundaria = this.add.zone(0,0, 960,640)
+        .setOrigin(0)
+        .setName('secundaria')
+        .setInteractive(contornoSecundario, Phaser.Geom.Polygon.Contains);
+        opcionSecundaria.input.cursor = 'pointer';
+        opcionSecundaria.once('pointerdown', ()=> this.opcionPulsada(opcionSecundaria));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoSecundario.points, true);
+
+        
+        
     }
 
     opcionPulsada(opcion){
         switch (opcion.name){
-            case 'argentina':
-            this.scene.start('argentinaScene');
+            case 'principal':
+            this.scene.start('Scene');
             break;
-            default:
-                break;
+
+            case 'secundaria':
+            this.scene.start('runasScene');
+            break;
         }
     }
 
 }
-class EscenaArgentina extends SceneUI{
+class EscenaRunas extends SceneUI{
     constructor(){
-        super({key: 'argentinaScene'});
+        super({key: 'runasScene'});
     }
 
     preload(){
-        this.load.image('argentina', '../img/argentina.jpg');
+        this.load.image('runas', '../img/Escena4.jpg');
+
     }
     create(){
-        this.add.sprite(480, 320, 'argentina');
+        const { width, height } = this.sys.game.config; // Diseño esponsive
+
+        this.add.sprite(width / 2, height / 2, 'runas');
+        this.setupInterfaz();
+        this.recibirDanio(10);
+
+        
     }
 
 }
@@ -255,7 +333,7 @@ const config = {
     width: 1920,
     height: 1080,
     
-    scene: [Escena, EscenaNave, EscenaHome, EscenaMonstruo, EscenaArgentina, EscenaContinente,SceneUI],
+    scene: [Escena, EscenaPuerta, EscenaHome, EscenaMonstruo, EscenaRunas, EscenaPasillo,SceneUI],
 };
 
 new Phaser.Game(config);
