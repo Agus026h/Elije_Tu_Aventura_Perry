@@ -113,8 +113,15 @@ class SceneUI extends Phaser.Scene {
     //Resto y Actualizo al mismo tiempo
     recibirDanio(cantidad) {
         let salud = this.registry.get('salud') - cantidad;
+        if(salud >0){
+
         this.registry.set('salud', salud);
         this.actualizarBarra();
+
+        }else{
+            this.registry.set('salud',0);
+            this.scene.start("finalMaloScene");
+        }
     }
 
     actualizarBarra() {
@@ -209,7 +216,7 @@ class SceneUI extends Phaser.Scene {
             this.videoPerry.once('complete', () => {
                 this.videoPerry.setVisible(false);
                 this.videoPerry.stop();
-                this.cntBailar.setInteractive(); //desbloqueo de
+                this.cntBailar.setInteractive(); //desbloqueo de boton
             });
         }
     }
@@ -236,11 +243,13 @@ class Escena extends SceneUI {
 
     create() {
         
-        const { width, height } = this.sys.game.config; // Diseño esponsive
+        const { width, height } = this.sys.game.config; // Diseño responsive
 
         this.add.sprite(width / 2, height / 2, 'fondo');
         this.setupInterfaz();
         
+        this.botonAtras.setVisible(false);
+    
         
         //this.recibirDanio(10);
 
@@ -277,14 +286,14 @@ class EscenaPuerta extends SceneUI {
     }
 
     create() {
-        const { width, height } = this.sys.game.config; // Diseño esponsive
+        const { width, height } = this.sys.game.config; // Diseño responsive
 
         this.add.sprite(width / 2, height / 2, 'puerta');
         //para el boton atras
         this.registry.set('escenaPrevia', 'sceneA');
         this.setupInterfaz();
         this.recibirDanio(10);
-        
+        this.mostrarNotificacion('Cuidado!!!, el calor del castillo de Hades es demaciado intenso, cada ves que te muevas perderas 10 de salud');
        
 
         const contornoPuerta = new Phaser.Geom.Polygon([945,823,974,489,1136,349,1303,427,1320,834]);
@@ -319,7 +328,7 @@ class EscenaPasillo extends SceneUI {
     }
 
     create() {
-        const { width, height } = this.sys.game.config; // Diseño esponsive
+        const { width, height } = this.sys.game.config; // Diseño responsive
 
         this.add.sprite(width / 2, height / 2, 'pasillo');
         this.registry.set('escenaPrevia', 'puertaScene');
@@ -328,7 +337,7 @@ class EscenaPasillo extends SceneUI {
         
 
         const contornoPrincipal = new Phaser.Geom.Polygon([410,524,412,224,461,162,529,146,590,165,626,228,629,241,631,518]);
-        const contornoSecundario = new Phaser.Geom.Polygon([858,188,865,565,1771,560,1762,194,1530,145,1084,155]);
+        const contornoSecundario = new Phaser.Geom.Polygon([809,55,719,543,1771,672,1747,7]);
         const opcionPrincipal = this.add.zone(0,0,960,640)
         .setOrigin(0)
         .setName('principal')
@@ -374,7 +383,7 @@ class EscenaRunas extends SceneUI{
         this.load.video('videoPerry', '../img/Baile.mp4');
     }
     create(){
-        const { width, height } = this.sys.game.config; // Diseño esponsive
+        const { width, height } = this.sys.game.config; // Diseño responsive
 
         this.add.sprite(width / 2, height / 2, 'runas');
         this.registry.set('escenaPrevia', 'pasilloScene');
@@ -471,6 +480,7 @@ class EscenaOjoAbierto extends SceneUI{
 
     preload(){
         this.load.image('ojoAbierto', '../img/Escena9.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
     create(){
         const { width, height } = this.sys.game.config; // Diseño responsive
@@ -543,6 +553,7 @@ class EscenaCofre extends SceneUI {
 
     preload() {
         this.load.image('cofre', '../img/Escena6.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
 
     create() {
@@ -590,6 +601,7 @@ class EscenaCofreAbierto extends SceneUI {
 
     preload() {
         this.load.image('cofreAbierto', '../img/Escena7.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
 
     create() {
@@ -624,6 +636,7 @@ class EscenaPuertaN extends SceneUI {
 
     preload() {
         this.load.image('puertaN', '../img/Escena8.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
 
     create() {
@@ -633,12 +646,10 @@ class EscenaPuertaN extends SceneUI {
         this.registry.set('escenaPrevia', 'ojoScene');
 
         this.setupInterfaz();
+        
         this.mostrarNotificacion("Te encuentras con un camino sin salida, un solo paso en falso podria costarte la vida, tal vez deberias regresar");
         //this.recibirDanio(10);
 
-        
-        
-        //
         
     }
 
@@ -655,6 +666,7 @@ class EscenaPuente extends SceneUI {
 
     preload() {
         this.load.image('puente', '../img/Escena10.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
 
     create() {
@@ -667,7 +679,7 @@ class EscenaPuente extends SceneUI {
         this.mostrarNotificacion("Te encuentras con un puente que se desmorona al intentar cruzarlo, Pero parece posible llegar a la torre de un salto ");
         //this.recibirDanio(10);
 
-        const contornoTorre = new Phaser.Geom.Polygon([549,502,509,291,542,52,739,68,806,244,804,502]);
+        const contornoTorre = new Phaser.Geom.Polygon([149,456,505,519,872,654,1004,608,980,562,980,380,953,6,156,4]);
         const opcionTorre = this.add.zone(0,0,960,640)
         .setOrigin(0)
         .setName('torre')
@@ -699,6 +711,7 @@ class EscenaHades extends SceneUI {
 
     preload() {
         this.load.image('hades', '../img/Escena11.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
     }
 
     create() {
@@ -723,15 +736,83 @@ class EscenaHades extends SceneUI {
 
     }
 
-
+    //condicion de victoria o derrota
     opcionPulsada(opcion){
         switch (opcion.name){
-            case 'torre':
-            this.scene.start('hadesScene');
+            case 'hades':
+                if(this.registry.get('salud') <=40 || this.registry.get('botonBailarActivado')!= true){
+                    this.scene.start('finalMaloScene');
+                }else{
+                    this.scene.start('finalBuenoScene');
+                }
+            
             break;
 
         }
     }
+
+}
+
+class EscenaFinalMalo extends SceneUI {
+
+    constructor() {
+        super({key: 'finalMaloScene'});
+    }
+
+    preload() {
+        this.load.image('finalMalo', '../img/Escena12.jpg');
+        
+    }
+
+    create() {
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'finalMalo');
+        //this.registry.set('escenaPrevia', 'ojoScene');
+
+        this.setupInterfaz();
+        this.botonAtras.setVisible(false);
+    
+        this.mostrarNotificacion("Sucumbiste ante los peligros de la Mazmorra");
+        this.registry.set('botonBailarActivado', false);
+        //this.recibirDanio(10);
+        
+    }
+
+
+
+
+}
+
+class EscenaFinalBueno extends SceneUI {
+
+    constructor() {
+        super({key: 'finalBuenoScene'});
+    }
+
+    preload() {
+        this.load.image('finalBueno', '../img/Escena13.jpg');
+        this.load.video('videoPerry', '../img/Baile.mp4');
+    }
+
+    create() {
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'finalBueno');
+        
+        
+        this.setupInterfaz();
+        this.mostrarNotificacion("Derrotaste a Hades y salvaste al Pueblo de Danville");
+        this.botonAtras.setVisible(false);
+        //this.recibirDanio(10);
+
+        
+        
+        
+    }
+
+
+
 
 }
 
@@ -753,7 +834,7 @@ const config = {
     height: 1080,
     
     scene: [Escena, EscenaPuerta, EscenaOjo, EscenaCofre, EscenaRunas, EscenaPasillo, EscenaCofreAbierto, EscenaPuertaN,
-         EscenaOjoAbierto, EscenaPuente, EscenaHades, SceneUI],
+         EscenaOjoAbierto, EscenaPuente, EscenaHades, EscenaFinalMalo, EscenaFinalBueno, SceneUI],
 };
 
 new Phaser.Game(config);
