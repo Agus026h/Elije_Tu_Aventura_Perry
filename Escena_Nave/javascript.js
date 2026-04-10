@@ -2,6 +2,7 @@ class SceneUI extends Phaser.Scene {
 
     setupInterfaz() {
         const { width, height } = this.sys.game.config; 
+        this.cameras.main.fadeIn(500, 0, 0, 0);
         //estados
         if (this.registry.get('botonBailarActivado') === undefined) {
         this.registry.set('botonBailarActivado', false);
@@ -29,7 +30,7 @@ class SceneUI extends Phaser.Scene {
         fondoAtras.setInteractive({ useHandCursor: true });
         fondoAtras.on('pointerdown', () => {
             const destino = this.registry.get('escenaPrevia') || 'sceneA';
-            this.scene.start(destino);
+            this.cambiarEscena(destino);
         });
 
 
@@ -120,7 +121,7 @@ class SceneUI extends Phaser.Scene {
 
         }else{
             this.registry.set('salud',0);
-            this.scene.start("finalMaloScene");
+            this.cambiarEscena("finalMaloScene");
         }
     }
 
@@ -131,16 +132,7 @@ class SceneUI extends Phaser.Scene {
         }
     }
 
-    volverAtras(escena) {
-        if (escena) {
-            this.scene.start(escena);
-        }else{
-            this.scene.start('sceneA');
-        }
     
-    }
-
-
 
 
     setupBotonBailar() {
@@ -220,6 +212,14 @@ class SceneUI extends Phaser.Scene {
             });
         }
     }
+
+    cambiarEscena(nombreEscena) {
+        this.cameras.main.fadeOut(500, 0, 0, 0);
+
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+            this.scene.start(nombreEscena);
+        });
+    }
 }
 
 
@@ -267,9 +267,9 @@ class Escena extends SceneUI {
     opcionPulsada(opcion) {
         console.log("Opción:" + opcion.name)
         if (opcion.name === 'puerta') {
-            this.scene.start('puertaScene');
+            this.cambiarEscena('puertaScene');
         } else {
-            this.scene.start('sceneA');
+            this.cambiarEscena('sceneA');
         }
     }
 }
@@ -309,9 +309,9 @@ class EscenaPuerta extends SceneUI {
 
     opcionPulsada(opcion) {
         if (opcion.name === 'pasillo') {
-            this.scene.start('pasilloScene');
+            this.cambiarEscena('pasilloScene');
         } else {
-            this.scene.start('sceneA');
+            this.cambiarEscena('sceneA');
         }
     }
 }
@@ -363,11 +363,11 @@ class EscenaPasillo extends SceneUI {
     opcionPulsada(opcion){
         switch (opcion.name){
             case 'principal':
-            this.scene.start('ojoScene');
+            this.cambiarEscena('ojoScene');
             break;
 
             case 'secundaria':
-            this.scene.start('runasScene');
+            this.cambiarEscena('runasScene');
             break;
         }
     }
@@ -454,7 +454,7 @@ class EscenaOjo extends SceneUI{
             case 'ojo':
                 if(this.registry.get('tieneLlave')=== true){
                     this.mostrarNotificacion("Usas la llave y la puerta se abre");
-                    this.scene.start('ojoAbiertoScene');
+                    this.cambiarEscena('ojoAbiertoScene');
                 }else{
                     this.mostrarNotificacion("La puerta esta cerrada.... necesitas una llave para poder abrirla");
                     
@@ -462,11 +462,11 @@ class EscenaOjo extends SceneUI{
             break;
 
             case 'puertaR':
-            this.scene.start('cofreScene');
+            this.cambiarEscena('cofreScene');
             break;
 
             case 'puertaN':
-            this.scene.start('puertaNScene');
+            this.cambiarEscena('puertaNScene');
             break;
         }
     }
@@ -530,15 +530,15 @@ class EscenaOjoAbierto extends SceneUI{
     opcionPulsada(opcion){
         switch (opcion.name){
             case 'ojoAbierto':
-            this.scene.start('puenteScene');
+            this.cambiarEscena('puenteScene');
             break;
 
             case 'puertaR':
-            this.scene.start('cofreScene');
+            this.cambiarEscena('cofreScene');
             break;
 
             case 'puertaN':
-            this.scene.start('puertaNScene');
+            this.cambiarEscena('puertaNScene');
             break;
         }
     }
@@ -583,7 +583,7 @@ class EscenaCofre extends SceneUI {
     opcionPulsada(opcion){
         switch (opcion.name){
             case 'llave':
-            this.scene.start('cofreAbiertoScene');
+            this.cambiarEscena('cofreAbiertoScene');
             break;
 
         }
@@ -695,7 +695,7 @@ class EscenaPuente extends SceneUI {
     opcionPulsada(opcion){
         switch (opcion.name){
             case 'torre':
-            this.scene.start('hadesScene');
+            this.cambiarEscena('hadesScene');
             break;
 
         }
@@ -741,9 +741,9 @@ class EscenaHades extends SceneUI {
         switch (opcion.name){
             case 'hades':
                 if(this.registry.get('salud') <=40 || this.registry.get('botonBailarActivado')!= true){
-                    this.scene.start('finalMaloScene');
+                    this.cambiarEscena('finalMaloScene');
                 }else{
-                    this.scene.start('finalBuenoScene');
+                    this.cambiarEscena('finalBuenoScene');
                 }
             
             break;
