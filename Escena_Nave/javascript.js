@@ -1,6 +1,5 @@
 class SceneUI extends Phaser.Scene {
 
-    //barra de vida
     setupInterfaz() {
         const { width, height } = this.sys.game.config; 
         //estados
@@ -10,6 +9,10 @@ class SceneUI extends Phaser.Scene {
         
         if (this.registry.get('salud') === undefined) {
             this.registry.set('salud', 100);
+        }
+
+        if(this.registry.get('tieneLlave') === undefined){  
+            this.registry.set('tieneLlave', false);
         }
         //barra de vida
         this.add.rectangle(20, 20, 205, 25, 0x000000).setOrigin(0);
@@ -288,7 +291,7 @@ class EscenaPuerta extends SceneUI {
         const opcionPasar = this.add.zone(0,0,960,640)
         .setOrigin(0)
         .setName('pasillo')
-        .setInteractive(contornoPuerta, Phaser.Geom.Polygon.Contains);
+        .setInteractive(contornoPuerta, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionPasar.input.cursor = 'pointer';// al ser poligono le cambio el pointer asi
         opcionPasar.once('pointerdown', () => this.opcionPulsada(opcionPasar));
       
@@ -329,7 +332,7 @@ class EscenaPasillo extends SceneUI {
         const opcionPrincipal = this.add.zone(0,0,960,640)
         .setOrigin(0)
         .setName('principal')
-        .setInteractive(contornoPrincipal, Phaser.Geom.Polygon.Contains);
+        .setInteractive(contornoPrincipal, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionPrincipal.input.cursor = 'pointer';
         opcionPrincipal.once('pointerdown', () => this.opcionPulsada(opcionPrincipal));
         this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoPrincipal.points, true);
@@ -339,7 +342,7 @@ class EscenaPasillo extends SceneUI {
         const opcionSecundaria = this.add.zone(0,0, 960,640)
         .setOrigin(0)
         .setName('secundaria')
-        .setInteractive(contornoSecundario, Phaser.Geom.Polygon.Contains);
+        .setInteractive(contornoSecundario, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionSecundaria.input.cursor = 'pointer';
         opcionSecundaria.once('pointerdown', ()=> this.opcionPulsada(opcionSecundaria));
         this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoSecundario.points, true);
@@ -403,17 +406,15 @@ class EscenaOjo extends SceneUI{
         this.recibirDanio(10);
 
         
-        
-        
 
         //puerta central
         const contornoOjo = new Phaser.Geom.Polygon([651,1068,750,470,843,344,957,293,1062,344,1158,449,1250,1073]);
         const opcionOjo = this.add.zone(0,0,960,640)
         .setOrigin(0)
         .setName('ojo')
-        .setInteractive(contornoOjo, Phaser.Geom.Polygon.Contains);
+        .setInteractive(contornoOjo, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionOjo.input.cursor = 'pointer';
-        opcionOjo.once('pointerdown', () => this.opcionPulsada(opcionOjo));
+        opcionOjo.on('pointerdown', () => this.opcionPulsada(opcionOjo));
         this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoOjo.points, true);
 
 
@@ -421,8 +422,8 @@ class EscenaOjo extends SceneUI{
         const contornoR = new Phaser.Geom.Polygon([1798,1054,1555,406,1560,120,1754,77,1918,200,1918,1071]);
         const opcionR = this.add.zone(0,0, 960,640)
         .setOrigin(0)
-        .setName('secundaria')
-        .setInteractive(contornoR, Phaser.Geom.Polygon.Contains);
+        .setName('puertaR')
+        .setInteractive(contornoR, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionR.input.cursor = 'pointer';
         opcionR.once('pointerdown', ()=> this.opcionPulsada(opcionR));
         this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoR.points, true);
@@ -431,30 +432,310 @@ class EscenaOjo extends SceneUI{
         const contornoN = new Phaser.Geom.Polygon([114,1068,353,333,349,110,132,86,0,196,0,1070]);
         const opcionN = this.add.zone(0,0, 960,640)
         .setOrigin(0)
-        .setName('secundaria')
-        .setInteractive(contornoN, Phaser.Geom.Polygon.Contains);
+        .setName('puertaN')
+        .setInteractive(contornoN, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
         opcionN.input.cursor = 'pointer';
         opcionN.once('pointerdown', ()=> this.opcionPulsada(opcionN));
         this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoN.points, true);
 
     }
+    
+    opcionPulsada(opcion){
+        switch (opcion.name){
+            case 'ojo':
+                if(this.registry.get('tieneLlave')=== true){
+                    this.mostrarNotificacion("Usas la llave y la puerta se abre");
+                    this.scene.start('ojoAbiertoScene');
+                }else{
+                    this.mostrarNotificacion("La puerta esta cerrada.... necesitas una llave para poder abrirla");
+                    
+                }
+            break;
+
+            case 'puertaR':
+            this.scene.start('cofreScene');
+            break;
+
+            case 'puertaN':
+            this.scene.start('puertaNScene');
+            break;
+        }
+    }
 
 }
 
-class EscenaMonstruo extends SceneUI {
+class EscenaOjoAbierto extends SceneUI{
+    constructor(){
+        super({key: 'ojoAbiertoScene'});
+    }
+
+    preload(){
+        this.load.image('ojoAbierto', '../img/Escena9.jpg');
+    }
+    create(){
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'ojoAbierto');
+        this.registry.set('escenaPrevia', 'pasilloScene');
+
+        this.setupInterfaz();
+        this.mostrarNotificacion("La puerta se abre.....");
+        
+
+        
+
+        //puerta central
+        const contornoOjo = new Phaser.Geom.Polygon([651,1068,750,470,843,344,957,293,1062,344,1158,449,1250,1073]);
+        const opcionOjo = this.add.zone(0,0,960,640)
+        .setOrigin(0)
+        .setName('ojoAbierto')
+        .setInteractive(contornoOjo, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
+        opcionOjo.input.cursor = 'pointer';
+        opcionOjo.on('pointerdown', () => this.opcionPulsada(opcionOjo));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoOjo.points, true);
+
+
+        //puerta R
+        const contornoR = new Phaser.Geom.Polygon([1798,1054,1555,406,1560,120,1754,77,1918,200,1918,1071]);
+        const opcionR = this.add.zone(0,0, 960,640)
+        .setOrigin(0)
+        .setName('puertaR')
+        .setInteractive(contornoR, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
+        opcionR.input.cursor = 'pointer';
+        opcionR.once('pointerdown', ()=> this.opcionPulsada(opcionR));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoR.points, true);
+
+        //puerta N
+        const contornoN = new Phaser.Geom.Polygon([114,1068,353,333,349,110,132,86,0,196,0,1070]);
+        const opcionN = this.add.zone(0,0, 960,640)
+        .setOrigin(0)
+        .setName('puertaN')
+        .setInteractive(contornoN, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
+        opcionN.input.cursor = 'pointer';
+        opcionN.once('pointerdown', ()=> this.opcionPulsada(opcionN));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoN.points, true);
+
+    }
+    
+    opcionPulsada(opcion){
+        switch (opcion.name){
+            case 'ojoAbierto':
+            this.scene.start('puenteScene');
+            break;
+
+            case 'puertaR':
+            this.scene.start('cofreScene');
+            break;
+
+            case 'puertaN':
+            this.scene.start('puertaNScene');
+            break;
+        }
+    }
+
+}
+
+class EscenaCofre extends SceneUI {
 
     constructor() {
-        super({key: 'monstruoScene'});
+        super({key: 'cofreScene'});
     }
 
     preload() {
-        this.load.image('monstruo', '../img/monstruo.jpg');
+        this.load.image('cofre', '../img/Escena6.jpg');
     }
 
     create() {
-        this.add.sprite(480, 320, 'monstruo');
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'cofre');
+        this.registry.set('escenaPrevia', 'ojoScene');
+
+        this.setupInterfaz();
+        //this.recibirDanio(10);
+
+        
+        
+        
+
+        //puerta central
+        const contornoCofre = new Phaser.Geom.Polygon([1328,673,1321,843,1610,941,1783,924,1759,677,1710,636,1386,612]);
+        const opcionCofre = this.add.zone(0,0,960,640)
+        .setOrigin(0)
+        .setName('llave')
+        .setInteractive(contornoCofre, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
+        opcionCofre.input.cursor = 'pointer';
+        opcionCofre.once('pointerdown', () => this.opcionPulsada(opcionCofre));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoCofre.points, true);
     }
+
+    opcionPulsada(opcion){
+        switch (opcion.name){
+            case 'llave':
+            this.scene.start('cofreAbiertoScene');
+            break;
+
+        }
+    }
+
+
+
 }
+
+class EscenaCofreAbierto extends SceneUI {
+
+    constructor() {
+        super({key: 'cofreAbiertoScene'});
+    }
+
+    preload() {
+        this.load.image('cofreAbierto', '../img/Escena7.jpg');
+    }
+
+    create() {
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'cofreAbierto');
+        this.registry.set('escenaPrevia', 'ojoScene');
+
+        this.setupInterfaz();
+        //cambio de estado de la variable global
+
+        this.registry.set('tieneLlave', true);
+        this.mostrarNotificacion("Encontraste La Llave que lleva al interior de esta Mazmorra, Tal vez ahora puedas atravezar la puerta");
+        //this.recibirDanio(10);
+
+        
+        
+    
+        
+    }
+
+
+
+
+}
+
+class EscenaPuertaN extends SceneUI {
+
+    constructor() {
+        super({key: 'puertaNScene'});
+    }
+
+    preload() {
+        this.load.image('puertaN', '../img/Escena8.jpg');
+    }
+
+    create() {
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'puertaN');
+        this.registry.set('escenaPrevia', 'ojoScene');
+
+        this.setupInterfaz();
+        this.mostrarNotificacion("Te encuentras con un camino sin salida, un solo paso en falso podria costarte la vida, tal vez deberias regresar");
+        //this.recibirDanio(10);
+
+        
+        
+        //
+        
+    }
+
+
+
+
+}
+
+class EscenaPuente extends SceneUI {
+
+    constructor() {
+        super({key: 'puenteScene'});
+    }
+
+    preload() {
+        this.load.image('puente', '../img/Escena10.jpg');
+    }
+
+    create() {
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'puente');
+        this.registry.set('escenaPrevia', 'ojoAbiertoScene');
+
+        this.setupInterfaz();
+        this.mostrarNotificacion("Te encuentras con un puente que se desmorona al intentar cruzarlo, Pero parece posible llegar a la torre de un salto ");
+        //this.recibirDanio(10);
+
+        const contornoTorre = new Phaser.Geom.Polygon([549,502,509,291,542,52,739,68,806,244,804,502]);
+        const opcionTorre = this.add.zone(0,0,960,640)
+        .setOrigin(0)
+        .setName('torre')
+        .setInteractive(contornoTorre, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
+        opcionTorre.input.cursor = 'pointer';
+        opcionTorre.on('pointerdown', () => this.opcionPulsada(opcionTorre));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoTorre.points, true);
+    
+
+    }
+
+
+    opcionPulsada(opcion){
+        switch (opcion.name){
+            case 'torre':
+            this.scene.start('hadesScene');
+            break;
+
+        }
+    }
+
+}
+
+class EscenaHades extends SceneUI {
+
+    constructor() {
+        super({key: 'hadesScene'});
+    }
+
+    preload() {
+        this.load.image('hades', '../img/Escena11.jpg');
+    }
+
+    create() {
+        const { width, height } = this.sys.game.config; // Diseño responsive
+
+        this.add.sprite(width / 2, height / 2, 'hades');
+        this.registry.set('escenaPrevia', 'puenteScene');
+
+        this.setupInterfaz();
+       
+        //this.recibirDanio(10);
+
+        const contornoHades = new Phaser.Geom.Polygon([899,870,1014,424,1230,42,1499,438,1516,877,1243,889]);
+        const opcionHades = this.add.zone(0,0,960,640)
+        .setOrigin(0)
+        .setName('hades')
+        .setInteractive(contornoHades, Phaser.Geom.Polygon.Contains, { useHandCursor: true });
+        opcionHades.input.cursor = 'pointer';
+        opcionHades.on('pointerdown', () => this.opcionPulsada(opcionHades));
+        this.add.graphics().lineStyle(2, 0xffff00).strokePoints(contornoHades.points, true);
+    
+
+    }
+
+
+    opcionPulsada(opcion){
+        switch (opcion.name){
+            case 'torre':
+            this.scene.start('hadesScene');
+            break;
+
+        }
+    }
+
+}
+
+
 
 function resize() {
     const canvas = document.querySelector("canvas");
@@ -471,7 +752,8 @@ const config = {
     width: 1920,
     height: 1080,
     
-    scene: [Escena, EscenaPuerta, EscenaOjo, EscenaMonstruo, EscenaRunas, EscenaPasillo,SceneUI],
+    scene: [Escena, EscenaPuerta, EscenaOjo, EscenaCofre, EscenaRunas, EscenaPasillo, EscenaCofreAbierto, EscenaPuertaN,
+         EscenaOjoAbierto, EscenaPuente, EscenaHades, SceneUI],
 };
 
 new Phaser.Game(config);
